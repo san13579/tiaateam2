@@ -10,7 +10,7 @@ import { GiFilmSpool } from "react-icons/gi";
 import { BiLike } from "react-icons/bi";
 import { BiDislike } from "react-icons/bi";
 import { AiFillStar } from "react-icons/ai";
-import { MdReviews } from "react-icons/md";
+import { BsWatch } from "react-icons/bs";
 import { detailsAction } from "../../Store/details-slice";
 import {
   getOneMovie,
@@ -23,6 +23,7 @@ import {
   ratingMovie,
   ratingUser,
   getUserById,
+  watchlistById,
 } from "../../api";
 import { Navbar } from "../../components/Navbar";
 import { loginAction } from "../../Store/login-slice";
@@ -40,6 +41,7 @@ export const Details = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const [inputValue, setInputValue] = useState("");
+  const [watchlist, setWatchlist] = useState(false);
   const [ratings, setRatings] = useState(0);
   const [like, setLike] = useState(null);
   const allDetails = useSelector((state) => state.details);
@@ -158,6 +160,12 @@ export const Details = () => {
         }
       });
 
+      login.watchlist.map((e) => {
+        if (e === res.data.movie.title) {
+          setWatchlist(true);
+        }
+      });
+
       dispatch(
         detailsAction.addDetails({
           title: res.data.movie.title,
@@ -219,7 +227,25 @@ export const Details = () => {
       const newMovieArray = removeElement(movieArray, prevRating);
       newMovieArray.push(newRating);
       ratingMovie(allDetails._id, newMovieArray);
-      ratingUser(login._id, loginArray);
+      ratingUser(login._id, loginArray).then((e) => {
+        getUserById(login._id).then((res) => {
+          if (res) {
+            dispatch(loginAction.logout());
+            dispatch(
+              loginAction.addLogin({
+                username: res.data.user.userName,
+                image_url: res.data.user.image_url,
+                likes: res.data.user.likes,
+                dislikes: res.data.user.dislike,
+                reviews: res.data.user.reviews,
+                ratings: loginArray,
+                _id: res.data.user._id,
+                watchlist: res.data.watchlist,
+              })
+            );
+          }
+        });
+      });
     }
     if (prevRating === 0) {
       ratingMovie(allDetails._id, [...allDetails.ratings, newRating]);
@@ -229,24 +255,80 @@ export const Details = () => {
           movie_id: allDetails.title,
           rating: newRating,
         },
-      ]);
+      ]).then((e) => {
+        getUserById(login._id).then((res) => {
+          if (res) {
+            dispatch(loginAction.logout());
+            dispatch(
+              loginAction.addLogin({
+                username: res.data.user.userName,
+                image_url: res.data.user.image_url,
+                likes: res.data.user.likes,
+                dislikes: res.data.user.dislike,
+                reviews: res.data.user.reviews,
+                ratings: [
+                  ...login.ratings,
+                  {
+                    movie_id: allDetails.title,
+                    rating: newRating,
+                  },
+                ],
+                _id: res.data.user._id,
+                watchlist: res.data.watchlist,
+              })
+            );
+          }
+        });
+      });
     }
-    getUserById(login._id).then((res) => {
-      if (res) {
-        dispatch(loginAction.logout());
-        dispatch(
-          loginAction.addLogin({
-            username: res.data.user.userName,
-            image_url: res.data.user.image_url,
-            likes: res.data.user.likes,
-            dislikes: res.data.user.dislike,
-            reviews: res.data.user.reviews,
-            ratings: res.data.user.ratings,
-            _id: res.data.user._id,
-          })
-        );
-      }
-    });
+  };
+
+  const watchlistUpdateHandler = () => {
+    if (login.watchlist !== []) {
+      watchlistById(login._id, [...login?.watchlist, allDetails.title]).then(
+        (e) => {
+          getUserById(login._id).then((res) => {
+            if (res) {
+              dispatch(loginAction.logout());
+              dispatch(
+                loginAction.addLogin({
+                  username: res.data.user.userName,
+                  image_url: res.data.user.image_url,
+                  likes: res.data.user.likes,
+                  dislikes: res.data.user.dislike,
+                  reviews: res.data.user.reviews,
+                  ratings: res.data.user.ratings,
+                  _id: res.data.user._id,
+                  watchlist: [...login?.watchlist, allDetails.title],
+                })
+              );
+            }
+          });
+        }
+      );
+    } else {
+      watchlistById(login._id, [allDetails.title]).then((e) => {
+        getUserById(login._id).then((res) => {
+          if (res) {
+            dispatch(loginAction.logout());
+            dispatch(
+              loginAction.addLogin({
+                username: res.data.user.userName,
+                image_url: res.data.user.image_url,
+                likes: res.data.user.likes,
+                dislikes: res.data.user.dislike,
+                reviews: res.data.user.reviews,
+                ratings: res.data.user.ratings,
+                _id: res.data.user._id,
+                watchlist: [allDetails.title],
+              })
+            );
+          }
+        });
+      });
+    }
+
+    setWatchlist(true);
   };
 
   return (
@@ -288,7 +370,7 @@ export const Details = () => {
               </h3>
             </div>
           </div>
-          {/*likes,dislikes,ratings */}
+          {/*likes,dislikes,ratings,watchlist */}
           <div className="text-white p-4  ">
             <div className="flex flex-row gap-24 p-4 mt-8 ml-16">
               <button
@@ -316,9 +398,13 @@ export const Details = () => {
                 className={`flex flex-row gap-2  bg-green-500  font-semibold text-white py-2 px-4 border border-green-500 border-transparent rounded text-2xl`}
               >
                 <AiFillStar className="w-[35px] h-[35px] " />{" "}
-                {(allDetails.ratings.reduce((acc, num) => acc + num, 0)/allDetails.ratings.length).toFixed(2)}
+                {(
+                  allDetails.ratings.reduce((acc, num) => acc + num, 0) /
+                  allDetails.ratings.length
+                ).toFixed(2)}
               </button>
             </div>
+
             <div className="flex items-center justify-center gap-2 mt-2">
               <div
                 className={`flex flex-row items-center justify-center gap-2 cursor-pointer w-[100px] h-[50px] font-semibold text-black border  border-transparent rounded text-2xl`}
@@ -397,7 +483,7 @@ export const Details = () => {
           </div>
         </div>
         <div className="fixed top-0 right-0 w-2/3 h-full overflow-y-auto text-white bg-black gap-4">
-          <div className="flex flex-col gap-4 ">
+          <div className="flex flex-col items-center justify-center gap-4 ">
             {/*trailer */}
             <div className="flex items-center justify-center mt-32 p-4">
               <iframe
@@ -424,6 +510,18 @@ export const Details = () => {
             <div className="flex font-semibold text-xl p-4 items-center justify-center">
               <h1 className="w-[900px]">{allDetails.description}</h1>
             </div>
+            {/* Watchlist Button */}
+            <button
+              className={`flex justify-center items-center w-72 h-16 gap-2 ${
+                watchlist === true
+                  ? "bg-orange-500 text-white border-transparent disabled:true disabled:opacity-50 disabled:cursor-not-allowed"
+                  : "text-orange-500  border-orange-500 cursor-pointer"
+              }   font-semibold py-2 px-4 border-2 rounded text-2xl`}
+              onClick={watchlistUpdateHandler}
+            >
+              <BsWatch className="w-[35px] h-[35px] " />{" "}
+              {watchlist === true ? "Added to watchlist" : "Add to watchlist"}
+            </button>
             {/*Stars */}
             <div className="flex flex-col font-semibold text-xl  gap-4 items-center justify-center p-4">
               <h1 className="text-3xl text-blue-300">Stars</h1>

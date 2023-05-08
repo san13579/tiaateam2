@@ -114,6 +114,18 @@ export const dislikeById = async (id, dislikes) => {
   }
 };
 
+export const watchlistById = async (id, watchlist) => {
+  console.log(watchlist);
+  try {
+    const res = axios.put(`${baseURL}api/users/watchlist/${id}`, {
+      watchlist: watchlist,
+    });
+    return res;
+  } catch (e) {
+    return null;
+  }
+};
+
 export const userLikeById = async (id, likes) => {
   try {
     const res = axios.put(`${baseURL}api/users/like/${id}`, {

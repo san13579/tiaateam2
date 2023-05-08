@@ -43,6 +43,9 @@ const usersSchema = mongoose.Schema(
     ratings: {
       type: [ratingSchema],
     },
+    watchlist: {
+      type: [String],
+    },
   },
   { timestamps: true }
 );

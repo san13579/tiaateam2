@@ -63,6 +63,7 @@ export const Login = () => {
                 reviews: res.data.user.reviews,
                 ratings: res.data.user.ratings,
                 _id: res.data.user._id,
+                watchlist: res.data.user.watchlist,
               })
             );
             dispatch(loaderAction.changeLoaderStateFalse());
@@ -87,7 +88,9 @@ export const Login = () => {
           <div className="flex items-center justify-center ">
             <img src={Logo} alt="Logo" className="h-[80px] w-auto" />
           </div>
-          <h2 className="font-bold text-3xl tracking-tight ">Login to CINEFLIX</h2>
+          <h2 className="font-bold text-3xl tracking-tight ">
+            Login to CINEFLIX
+          </h2>
         </div>
 
         <div className="w-full max-w-xl p-2 ">

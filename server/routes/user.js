@@ -18,6 +18,26 @@ router.get("/login", async (req, res) => {
   }
 });
 
+router.put("/watchlist/:id", async (req, res) => {
+  const filter = { _id: req.params.id };
+  const options = {
+    upsert: true,
+    new: true,
+  };
+  try {
+    const data = await user.findByIdAndUpdate(
+      filter,
+      {
+        watchlist: req.body.watchlist,
+      },
+      options
+    );
+    return res.status(200).send({ success: true, data: data });
+  } catch (e) {
+    return res.status(400).send({ success: false, msg: e });
+  }
+});
+
 router.get("/getOne/:id", async (req, res) => {
   const filter = { _id: req.params.id };
   try {
