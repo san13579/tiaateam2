@@ -25,6 +25,7 @@ export const Home = () => {
   const [randomElements, setRandomElements] = useState([]);
   const [inputValue, setInputValue] = useState("");
   const allData = useSelector((state) => state.movie);
+  const login = useSelector((state) => state.login);
 
   useEffect(() => {
     getAllMovie().then((res) => {
@@ -71,7 +72,16 @@ export const Home = () => {
     });
     return moviesArray;
   };
-  // console.log(allData);
+
+  const watchlistArray = () => {
+    let watchlistArray = [];
+    allData.allMovies?.map((e) => {
+      console.log(login, e.title);
+      return login.watchlist?.includes(e.title) ? watchlistArray.push(e) : null;
+    });
+    return watchlistArray;
+  };
+
   const genreArray = (data) => {
     let genreArray = [];
     allData.allMovies?.map((e) => {
@@ -136,7 +146,19 @@ export const Home = () => {
             })}
           </Carousel>
         )}
-
+        {/* Watchlist */}
+        {login.watchlist !== [] && type === "all" && inputValue === "" && (
+          <div className="relative w-[1800px] my-4 p-4 gap-4 ">
+            <p className="text-2xl text-left ml-12 font-bold my-2 text-white ">
+              WatchList...
+            </p>
+            <div>
+              <div>
+                <MovieContainerMain data={watchlistArray()} />
+              </div>
+            </div>
+          </div>
+        )}
         {/* Main Container Movies */}
         {(type === "all" || type === "movies") && (
           <div className="relative w-[1800px] my-4 p-4 gap-4 ">
@@ -150,6 +172,7 @@ export const Home = () => {
             </div>
           </div>
         )}
+
         {/* Directors */}
         {(type === "all" || type === "director") &&
           allData.allDirectors &&

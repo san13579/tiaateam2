@@ -10,6 +10,7 @@ const loginSlice = createSlice({
     dislikes: [],
     reviews: [],
     ratings: [],
+    watchlist: [],
     isLogin: false,
   },
   reducers: {
@@ -21,6 +22,7 @@ const loginSlice = createSlice({
       state.dislikes = action.payload.dislikes;
       state.reviews = action.payload.reviews;
       state.ratings = action.payload.ratings;
+      state.watchlist = action.payload.watchlist;
       state.isLogin = true;
     },
     logout(state) {
@@ -31,6 +33,7 @@ const loginSlice = createSlice({
       state.dislikes = [];
       state.reviews = [];
       state.ratings = [];
+      state.watchlist = [];
       state.isLogin = false;
     },
   },
