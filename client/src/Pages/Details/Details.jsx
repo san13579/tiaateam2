@@ -160,6 +160,12 @@ export const Details = () => {
         }
       });
 
+      login.ratings.map((e) => {
+        if (e.movie_id === allDetails.title) {
+          setRatings(e.rating);
+        }
+      });
+
       login.watchlist.map((e) => {
         if (e === res.data.movie.title) {
           setWatchlist(true);
